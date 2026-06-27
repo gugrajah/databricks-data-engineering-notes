@@ -78,3 +78,51 @@ The rescued data column (_rescued_data) captures mismatched or unparseable filed
 * JSON **objects** are enclosed in brackets
 * Within the curly brackets, JSON objects contain key-value pairs
 * Each key is always a string enclosed in quotation marks. Each key contains a value.
+* Value can be String, Number, Boolean, Array, Object
+
+1. **Working with JSON-Formatted Column as a STRING
+
+1.1. **STRING** Data Type
+
+* JSON can be stored as a simple STRING
+* Can hold **any JSON STRING** without constraints
+* It is less **perfomant**
+
+```sql
+SELECT json_column:name
+SELECT json_column:address:city
+```
+
+1.2. **STRUCT** Data Type
+
+* You can parse JSN data into a STRUCT type, with a **defined schema**
+* STRUCT **enforces** the JSON schema
+* This is **more efficient** for querying 
+* When converting a JSON-formatted STRING column to a STRUCT column, this is how JSON types map to Databricks SQL data types:
+    - JSON String maps to STRING
+    - JSON Number maps to INT, FLOAT, or DOUBLE
+    - JSON Boolean maps to BOOLEAN
+    - JSON Object maps to STRUCT<>
+    - JSON Array maps to ARRAY<>
+
+How to easily determine the structure of the JSON string. This can be done in 2 steps:
+* First get the schema of the JSON-formatted string
+    - you can use the built-in _*schema_of_json*_ function to automatically derive the schema. Simply pass the example JSON-formatted string as teh argument to this function, and it will return the inferred schema
+
+    ```sql
+    SELECT schema_of_json('sample-json-string')
+    ```
+* Once you have the structure of the JSON-formatted string, you can use the Spark _*from_json*_ function
+    - This function takes the JSON string and the specified schema obtained in the previous step, and returns a STRUCT column
+
+    ```sql
+    SELECT from_json(json_col, 'json-struct-schema') AS struct_column
+    FROM table
+    ```
+
+1.3. VARIANT Data Type
+
+* Can store any type of data, including JSON, and **is ideal for semi-structured** data
+* Highly **flexible**
+* Improved **performance** over existing methods
+
